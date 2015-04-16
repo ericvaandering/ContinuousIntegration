@@ -4,10 +4,7 @@
   <description>Integration wmagent instance</description>
   <keepDependencies>false</keepDependencies>
   <properties>
-    <hudson.plugins.trac.TracProjectProperty plugin="trac@1.13">
-      <tracWebsite>https://svnweb.cern.ch/trac/CMSDMWM/</tracWebsite>
-    </hudson.plugins.trac.TracProjectProperty>
-    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.4">
+    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.11.2">
       <projectUrl>https://github.com/dmwm/WMCore/</projectUrl>
     </com.coravy.hudson.plugins.github.GithubProjectProperty>
     <hudson.model.ParametersDefinitionProperty>
@@ -109,7 +106,7 @@ current=&quot;none&quot;
 # TODO: if a previous build leaves a corrupt install this will fail - how solve that - redeploy each time?
 
 if [ X$WMAGENT_VERSION == X ]; then
-  WMAGENT_VERSION=$(curl -s http://cms-dmwm-builds.web.cern.ch/cms-dmwm-builds/wmagent.$SCRAM_ARCH.comp | awk &apos;{print $4}&apos; | cut -d+ -f3)
+  export WMAGENT_VERSION=$(curl -s http://cmsrep.cern.ch/cmssw/comp.pre/RPMS/slc6_amd64_gcc481/ | cut -d\&gt; -f6 | cut -d\&quot; -f2 | grep wmagent-dev | cut -d+ -f3 | cut -d\- -f1,2 | tail -1)
 fi
 
 if [ X$current != X$WMAGENT_VERSION ]; then
@@ -125,7 +122,7 @@ if [ X$current != X$WMAGENT_VERSION ]; then
   fi
 
   # deploy
-  $PWD/deployment/Deploy -R wmagent-dev@${WMAGENT_VERSION} -r comp=comp -t $WMAGENT_VERSION -A $SCRAM_ARCH -s &apos;prep sw post&apos; $PWD admin/devtools wmagent
+  $PWD/deployment/Deploy -R wmagent-dev@${WMAGENT_VERSION} -r comp=comp.pre -t $WMAGENT_VERSION -A $SCRAM_ARCH -s &apos;prep sw post&apos; $PWD admin/devtools wmagent
 
   # force mysql to a reasonable size
   perl -p -i -e &apos;s/set-variable = innodb_buffer_pool_size=2G/set-variable = innodb_buffer_pool_size=50M/&apos; current/config/mysql/my.cnf
